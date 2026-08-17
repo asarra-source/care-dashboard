@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REPSCAN CARE — LTV Mensual</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  color-scheme:light;
+  --bg:#f4f2ed;--surface:#fff;--surface2:#ede9e0;
+  --text:#1a1916;--muted:#7a7870;--faint:#b5b2a8;
+  --green:#3a6b10;--green-bg:#e8f3da;--green-dot:#5a9e22;
+  --red:#a12a2a;--red-bg:#fbe9e9;--red-dot:#d94949;
+  --blue:#1a4f8a;--blue-bg:#e3edf8;
+  --amber:#7a4500;--amber-bg:#fdf0d8;
+  --border:rgba(0,0,0,0.1);
+  --radius:10px;
+}
+body{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:28px 24px;min-height:100vh}
+h1{font-size:18px;font-weight:500;margin-bottom:4px;letter-spacing:-.02em}
+.subtitle{font-size:12px;color:var(--muted);margin-bottom:12px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;padding:3px 12px;border-radius:20px;background:var(--blue-bg);color:var(--blue);margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+.kpi{background:var(--surface2);border-radius:var(--radius);padding:12px 14px}
+.kl{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.kv{font-size:22px;font-weight:600;color:var(--text);font-family:'DM Mono',ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:-.03em}
+.ks{font-size:10px;color:var(--faint);margin-top:2px}
+.charts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px}
+.card-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.months-wrap{display:flex;flex-direction:column;gap:8px}
+.month-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.month-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none}
+.month-header:hover{background:rgba(0,0,0,0.02)}
+.month-name{font-size:13px;font-weight:500}
+.badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.badge{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+.badge-a{background:var(--green-bg);color:var(--green)}
+.badge-b{background:var(--red-bg);color:var(--red)}
+.badge-n{background:var(--surface2);color:var(--muted)}
+.badge-r{background:var(--amber-bg);color:var(--amber)}
+.arr{font-size:10px;color:var(--faint);margin-left:4px}
+.month-detail{display:none;border-top:0.5px solid var(--border);padding:14px 16px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.ds-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.ds-title.a{color:var(--green)}.ds-title.b{color:var(--red)}.ds-title.c{color:var(--blue)}
+.client-item{font-size:12px;color:var(--muted);padding:3px 0;border-bottom:.5px solid rgba(0,0,0,0.06);display:flex;align-items:center;gap:6px}
+.client-item:last-child{border-bottom:none}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-a{background:var(--green-dot)}.dot-b{background:var(--red-dot)}.dot-n{background:var(--faint)}
+.none-label{font-size:11px;color:var(--faint);font-style:italic}
+.client-amount{margin-left:auto;font-family:'DM Mono',ui-monospace,'SF Mono',Menlo,monospace;font-size:11px;color:var(--faint)}
+.rev-bar-wrap{margin-top:10px;padding-top:10px;border-top:.5px solid var(--border)}
+.rev-bar-label{font-size:10px;color:var(--faint);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.rev-bar-bg{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.rev-bar-fill{height:100%;background:#3266ad;border-radius:3px}
+@media(max-width:700px){.charts,.detail-grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<h1>REPSCAN CARE — LTV Mensual</h1>
+<p class="subtitle">Nov 2023 – Jul 2026 · Datos reales por cliente</p>
+<span class="tag" id="tagTotal">—</span>
+
+<div class="kpis">
+  <div class="kpi"><div class="kl">MRR Jul 2026</div><div class="kv" id="kv-mrr">—</div><div class="ks">último mes</div></div>
+  <div class="kpi"><div class="kl">MRR máximo</div><div class="kv" id="kv-peak">—</div><div class="ks" id="ks-peak">—</div></div>
+  <div class="kpi"><div class="kl">Total altas</div><div class="kv" id="kv-altas">—</div><div class="ks">en 33 meses</div></div>
+  <div class="kpi"><div class="kl">Total bajas</div><div class="kv" id="kv-bajas">—</div><div class="ks">en 33 meses</div></div>
+  <div class="kpi"><div class="kl">Ticket medio Jul 2026</div><div class="kv" id="kv-ticket">—</div><div class="ks">vs 20,00 € Nov 2023</div></div>
+</div>
+
+<div class="charts">
+  <div class="card"><div class="card-title">MRR mensual (€)</div><div style="position:relative;height:180px"><canvas id="cMrr"></canvas></div></div>
+  <div class="card"><div class="card-title">Altas y bajas</div><div style="position:relative;height:180px"><canvas id="cAB"></canvas></div></div>
+  <div class="card"><div class="card-title">Clientes activos</div><div style="position:relative;height:180px"><canvas id="cAct"></canvas></div></div>
+</div>
+
+<div class="months-wrap" id="monthsWrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var meses = [
+  {m:"Nov 2023",altas:["Mundo Dental Levante SL"],bajas:[],activos:1,mrr:20.00},
+  {m:"Dic 2023",altas:["Sabrina Paola Escobar"],bajas:[],activos:2,mrr:40.00},
+  {m:"Ene 2024",altas:[],bajas:[],activos:2,mrr:40.00},
+  {m:"Feb 2024",altas:[],bajas:[],activos:2,mrr:40.00},
+  {m:"Mar 2024",altas:["Rocio Botschi de Guzmán Moure"],bajas:[],activos:3,mrr:60.00},
+  {m:"Abr 2024",altas:["FALLECIDO Carlos Javier San Jose Calavia","Ricardo Muñoz Berrio","Terxam Catering"],bajas:[],activos:6,mrr:135.00},
+  {m:"May 2024",altas:["Casal Fester SL","EL COBRADOR del FRAC, S.A","Eusterio de las Heras e Hijos S.L."],bajas:["Ricardo Muñoz Berrio"],activos:8,mrr:255.00},
+  {m:"Jun 2024",altas:["L'Etourdit Salud Mental Asociación Civil","Ricardo Muñoz Berrio"],bajas:["EL COBRADOR del FRAC, S.A"],activos:9,mrr:175.00},
+  {m:"Jul 2024",altas:[],bajas:[],activos:9,mrr:175.00},
+  {m:"Ago 2024",altas:["EL COFRAC, S.L","Vanessa Ramirez Luque","Vital Centro Tercera Edad SL"],bajas:["Ricardo Muñoz Berrio"],activos:11,mrr:285.00},
+  {m:"Sep 2024",altas:["One Wish SL"],bajas:[],activos:12,mrr:305.00},
+  {m:"Oct 2024",altas:["Adrian Fernandez Benitez","Antonio Nicolau Fernandez","DELETREA SLP","Lineas Financieras Internacionales S.L.","Unittas y Centro Médico SL"],bajas:["One Wish SL"],activos:16,mrr:415.00},
+  {m:"Nov 2024",altas:["Euro Premier S.L.","One Wish SL","Tractaments Verticals SL"],bajas:["Terxam Catering"],activos:18,mrr:495.00},
+  {m:"Dic 2024",altas:["Administracion de Fincas Via SL"],bajas:[],activos:19,mrr:525.00},
+  {m:"Ene 2025",altas:["Noelia De Sancho Soto"],bajas:[],activos:20,mrr:549.79},
+  {m:"Feb 2025",altas:["Tiara Sanz"],bajas:["Administracion de Fincas Via SL","FALLECIDO Carlos Javier San Jose Calavia","One Wish SL"],activos:18,mrr:573.95},
+  {m:"Mar 2025",altas:["Museo del descanso SLU","Viable Servicios Immobiliarios SL"],bajas:["Rocio Botschi de Guzmán Moure","Tiara Sanz"],activos:18,mrr:626.79},
+  {m:"Abr 2025",altas:["Duplach Group S.A.U"],bajas:[],activos:19,mrr:745.79},
+  {m:"May 2025",altas:["Variety Shoes SL"],bajas:[],activos:20,mrr:825.79},
+  {m:"Jun 2025",altas:["Marcial Cars SLU"],bajas:[],activos:21,mrr:874.55},
+  {m:"Jul 2025",altas:[],bajas:[],activos:21,mrr:904.55},
+  {m:"Ago 2025",altas:["ISHAN S.L."],bajas:[],activos:22,mrr:934.55},
+  {m:"Sep 2025",altas:["CRIMAPER 2019 S.L.","Mia R Leshman","Quiropractica Valladolid SL","Tesora Dreams Olivar S.L."],bajas:[],activos:26,mrr:1170.98},
+  {m:"Oct 2025",altas:["Proyectos y Construcciones Steel House SL"],bajas:["Sabrina Paola Escobar"],activos:26,mrr:1202.39},
+  {m:"Nov 2025",altas:["Angel Luis Estévez Marazuela","Grupo Immosol SL"],bajas:["Euro Premier S.L."],activos:27,mrr:1507.17},
+  {m:"Dic 2025",altas:["Carly Micheles","Terxam Catering"],bajas:[],activos:29,mrr:1644.86},
+  {m:"Ene 2026",altas:["Abel Roda rico","Benadin Delibasic","Viuda de Sainz SL"],bajas:["Terxam Catering"],activos:31,mrr:1784.06},
+  {m:"Feb 2026",altas:["APP Fashion S.L.","La Fabrica del gas S.L","Miriam Donado Soto"],bajas:[],activos:34,mrr:1906.56},
+  {m:"Mar 2026",altas:[],bajas:["EL COFRAC, S.L"],activos:33,mrr:1828.75},
+  {m:"Abr 2026",altas:["A-Group Aberturas SAS","Sade Containers Spain S.L"],bajas:["Abel Roda rico","Benadin Delibasic","Duplach Group S.A.U"],activos:32,mrr:1730.38},
+  {m:"May 2026",altas:["CATSERVEIS SXXI GESTIÓ CTI SL","GI & TI GELATO ITALIANO S.L.","La Torroja Properties SL","Namik Mesic","SERVEIS IMMOBILIARIS MADRENAS CREU SL"],bajas:["Variety Shoes SL"],activos:36,mrr:2050.57},
+  {m:"Jun 2026",altas:["José Estepa Cabello","Vito Fortuna Santana"],bajas:[],activos:38,mrr:2297.83},
+  {m:"Jul 2026",altas:["Juan Camps Pou","Priscilla Ramirez Garcia"],bajas:[],activos:40,mrr:2414.21},
+];
+
+var totalAltas=meses.reduce(function(s,m){return s+m.altas.length;},0);
+var totalBajas=meses.reduce(function(s,m){return s+m.bajas.length;},0);
+var todos=new Set();
+meses.forEach(function(m){m.altas.forEach(function(c){todos.add(c);});});
+var last=meses[meses.length-1];
+var maxMrr=Math.max.apply(null,meses.map(function(m){return m.mrr;}));
+var maxMes=meses.find(function(m){return m.mrr===maxMrr;});
+
+document.getElementById('tagTotal').textContent=todos.size+' clientes totales · '+last.activos+' activos en Jul 2026';
+document.getElementById('kv-mrr').textContent=last.mrr.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+document.getElementById('kv-peak').textContent=maxMrr.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+document.getElementById('ks-peak').textContent=maxMes.m;
+document.getElementById('kv-altas').textContent=totalAltas;
+document.getElementById('kv-bajas').textContent=totalBajas;
+document.getElementById('kv-ticket').textContent=(last.mrr/last.activos).toFixed(2).replace('.',',')+' €';
+
+var labels=meses.map(function(m){return m.m;});
+var gc='rgba(0,0,0,0.05)',tc='#888';
+var baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc,font:{size:9},maxRotation:45},grid:{color:gc}},y:{ticks:{color:tc,font:{size:9}},grid:{color:gc},min:0}}};
+
+new Chart(document.getElementById('cMrr'),{type:'line',data:{labels:labels,datasets:[{data:meses.map(function(m){return m.mrr;}),borderColor:'#3266ad',backgroundColor:'#3266ad18',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#3266ad'}]},options:JSON.parse(JSON.stringify(baseOpts))});
+
+new Chart(document.getElementById('cAB'),{type:'bar',data:{labels:labels,datasets:[
+  {label:'Altas',data:meses.map(function(m){return m.altas.length;}),backgroundColor:'rgba(90,158,34,0.75)',borderRadius:3},
+  {label:'Bajas',data:meses.map(function(m){return -m.bajas.length;}),backgroundColor:'rgba(217,73,73,0.75)',borderRadius:3}
+]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:10},boxWidth:8}}},scales:{x:{stacked:true,ticks:{color:tc,font:{size:9},maxRotation:45},grid:{color:gc}},y:{stacked:true,ticks:{color:tc,font:{size:9},callback:function(v){return Math.abs(v);}},grid:{color:gc}}}}});
+
+new Chart(document.getElementById('cAct'),{type:'line',data:{labels:labels,datasets:[{data:meses.map(function(m){return m.activos;}),borderColor:'#7c3aed',backgroundColor:'#7c3aed12',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#7c3aed'}]},options:JSON.parse(JSON.stringify(baseOpts))});
+
+var wrap=document.getElementById('monthsWrap');
+meses.slice().reverse().forEach(function(mes,i){
+  var id='m'+i;
+  var div=document.createElement('div');
+  div.className='month-card';
+
+  var bgs='';
+  if(mes.altas.length) bgs+='<span class="badge badge-a">+'+mes.altas.length+' alta'+(mes.altas.length>1?'s':'')+'</span>';
+  if(mes.bajas.length) bgs+='<span class="badge badge-b">&#8722;'+mes.bajas.length+' baja'+(mes.bajas.length>1?'s':'')+'</span>';
+  bgs+='<span class="badge badge-n">'+mes.activos+' activos</span>';
+  bgs+='<span class="badge badge-r">'+mes.mrr.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €</span>';
+
+  var alH=mes.altas.length?mes.altas.map(function(n){return '<div class="client-item"><span class="dot dot-a"></span>'+n+'</div>';}).join(''):'<div class="none-label">Sin altas</div>';
+  var baH=mes.bajas.length?mes.bajas.map(function(n){return '<div class="client-item"><span class="dot dot-b"></span>'+n+'</div>';}).join(''):'<div class="none-label">Sin bajas</div>';
+  var ticket=mes.activos>0?(mes.mrr/mes.activos).toFixed(2).replace('.',','):'-';
+  var pct=(mes.mrr/maxMrr*100).toFixed(1);
+
+  div.innerHTML=
+    '<div class="month-header" onclick="tog(\''+id+'\')">'
+    +'<div class="month-name">'+mes.m+'</div>'
+    +'<div class="badges">'+bgs+'<span class="arr" id="ar-'+id+'">▾</span></div>'
+    +'</div>'
+    +'<div class="month-detail" id="dt-'+id+'">'
+    +'<div class="detail-grid">'
+    +'<div><div class="ds-title a">Altas del mes</div>'+alH+'</div>'
+    +'<div><div class="ds-title b">Bajas del mes</div>'+baH+'</div>'
+    +'<div><div class="ds-title c">Resumen</div>'
+    +'<div class="client-item"><span class="dot dot-n"></span>MRR<span class="client-amount">'+mes.mrr.toLocaleString('es-ES',{minimumFractionDigits:2})+'€</span></div>'
+    +'<div class="client-item"><span class="dot dot-n"></span>Clientes activos<span class="client-amount">'+mes.activos+'</span></div>'
+    +'<div class="client-item"><span class="dot dot-n"></span>Ticket medio<span class="client-amount">'+ticket+'€</span></div>'
+    +'<div class="rev-bar-wrap"><div class="rev-bar-label">% sobre MRR máximo</div><div class="rev-bar-bg"><div class="rev-bar-fill" style="width:'+pct+'%"></div></div></div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+
+  wrap.appendChild(div);
+});
+
+function tog(id){
+  var d=document.getElementById('dt-'+id);
+  var a=document.getElementById('ar-'+id);
+  var open=d.style.display==='none'||d.style.display==='';
+  d.style.display=open?'block':'none';
+  a.textContent=open?'▴':'▾';
+}
+</script>
+</body>
+</html>
